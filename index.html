@@ -4,26 +4,64 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa de Hospitales Internacionales</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" onload="console.log('Leaflet CSS loaded')" onerror="loadFallbackCSS()">
+    <link rel="stylesheet" id="fallback-css" href="" style="display: none;" />
     <style>
         #map { height: 600px; width: 100%; }
         body { margin: 0; padding: 0; }
         h1 { text-align: center; font-family: Arial, sans-serif; margin: 10px 0; }
+        #error-message { display: none; color: red; text-align: center; font-family: Arial, sans-serif; margin: 20px; }
     </style>
 </head>
 <body>
     <h1>Mapa de Hospitales Internacionales</h1>
     <div id="map"></div>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" defer></script>
+    <div id="error-message">Error: Could not load the map. Please check your internet connection or try again later.</div>
     <script>
+        // Fallback CSS if primary CDN fails
+        function loadFallbackCSS() {
+            console.warn("Primary Leaflet CSS failed to load, attempting fallback...");
+            const fallback = document.getElementById('fallback-css');
+            fallback.href = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
+            fallback.style.display = 'block';
+            console.log('Fallback CSS set to:', fallback.href);
+        }
+
+        // Load Leaflet JS with fallback
+        const primaryScript = document.createElement('script');
+        primaryScript.src = 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js';
+        primaryScript.async = true;
+        primaryScript.defer = true;
+        primaryScript.onload = () => {
+            console.log('Leaflet JS loaded successfully');
+            initMap();
+        };
+        primaryScript.onerror = () => {
+            console.warn("Primary Leaflet JS failed to load, attempting fallback...");
+            const fallbackScript = document.createElement('script');
+            fallbackScript.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+            fallbackScript.async = true;
+            fallbackScript.defer = true;
+            fallbackScript.onload = () => {
+                console.log('Fallback Leaflet JS loaded successfully');
+                initMap();
+            };
+            fallbackScript.onerror = () => {
+                console.error('Both primary and fallback Leaflet JS failed to load. Check internet connection or CDN availability.');
+                document.getElementById('error-message').style.display = 'block';
+            };
+            document.head.appendChild(fallbackScript);
+        };
+        document.head.appendChild(primaryScript);
+
         // Function to initialize the map
         function initMap() {
             if (typeof L === 'undefined') {
-                console.error("Error: Leaflet library (L) is not defined. Check if the script loaded from https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js. Ensure you have an internet connection or try hosting the file on a server.");
+                console.error("Error: Leaflet library (L) is not defined. Check CDN links or internet connection.");
+                document.getElementById('error-message').style.display = 'block';
                 return;
             }
 
-            // Initialize the map with a fallback center
             console.log("Initializing map...");
             const map = L.map('map').setView([48.0, 2.0], 4); // Centered in Europe
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -31,7 +69,9 @@
                 maxZoom: 18,
                 tileSize: 512,
                 zoomOffset: -1
-            }).addTo(map);
+            }).addTo(map).on('tileerror', () => {
+                console.warn('Tile loading error. Check OpenStreetMap tile server or internet connection.');
+            });
 
             // List of hospitals with verified coordinates and addresses
             const hospitals = [
@@ -59,28 +99,21 @@
                 { name: "Hospital de Viladecans", coords: [41.3156, 2.0218], address: "Avinguda de Gavà, 50, 08840 Viladecans, Barcelona, Spain" }
             ];
 
-            // Add markers for each hospital
             console.log("Adding hospital markers...");
             hospitals.forEach(hospital => {
                 L.marker(hospital.coords).addTo(map)
                     .bindPopup(`<b>${hospital.name}</b><br>${hospital.address}<br>Lat: ${hospital.coords[0]}, Lon: ${hospital.coords[1]}`);
             });
 
-            // Fit map to show all markers
+            console.log("Fitting map bounds...");
             if (hospitals.length > 0) {
-                console.log("Fitting map bounds...");
                 const group = new L.featureGroup(hospitals.map(hospital => L.marker(hospital.coords)));
                 map.fitBounds(group.getBounds().pad(0.1)); // Add slight padding
             } else {
                 console.error("No hospitals to display");
+                document.getElementById('error-message').style.display = 'block';
             }
         }
-
-        // Run map initialization after DOM and scripts are loaded
-        document.addEventListener('DOMContentLoaded', () => {
-            console.log("DOM loaded, attempting to initialize map...");
-            initMap();
-        });
     </script>
 </body>
 </html>
