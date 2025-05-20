@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mapa de Hospitales Internacionales</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
     <style>
         #map { height: 600px; width: 100%; }
         body { margin: 0; padding: 0; }
@@ -14,17 +14,18 @@
 <body>
     <h1>Mapa de Hospitales Internacionales</h1>
     <div id="map"></div>
-    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.4/dist/leaflet.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js" defer></script>
     <script>
         // Function to initialize the map
         function initMap() {
             if (typeof L === 'undefined') {
-                console.error("Leaflet library failed to load. Please check the CDN link or your internet connection.");
+                console.error("Error: Leaflet library (L) is not defined. Check if the script loaded from https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js. Ensure you have an internet connection or try hosting the file on a server.");
                 return;
             }
 
             // Initialize the map with a fallback center
-            const map = L.map('map').setView([48.0, 2.0], 4); // Centered in Europe for broader view
+            console.log("Initializing map...");
+            const map = L.map('map').setView([48.0, 2.0], 4); // Centered in Europe
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
                 attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                 maxZoom: 18,
@@ -59,6 +60,7 @@
             ];
 
             // Add markers for each hospital
+            console.log("Adding hospital markers...");
             hospitals.forEach(hospital => {
                 L.marker(hospital.coords).addTo(map)
                     .bindPopup(`<b>${hospital.name}</b><br>${hospital.address}<br>Lat: ${hospital.coords[0]}, Lon: ${hospital.coords[1]}`);
@@ -66,6 +68,7 @@
 
             // Fit map to show all markers
             if (hospitals.length > 0) {
+                console.log("Fitting map bounds...");
                 const group = new L.featureGroup(hospitals.map(hospital => L.marker(hospital.coords)));
                 map.fitBounds(group.getBounds().pad(0.1)); // Add slight padding
             } else {
@@ -73,10 +76,11 @@
             }
         }
 
-        // Ensure Leaflet is loaded before initializing the map
-        window.onload = function() {
+        // Run map initialization after DOM and scripts are loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log("DOM loaded, attempting to initialize map...");
             initMap();
-        };
+        });
     </script>
 </body>
 </html>
