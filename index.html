@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>International Hospitals' Map</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        #map { height: 600px; width: 100%; }
+        body { margin: 0; padding: 0; }
+        h1 { text-align: center; font-family: Arial, sans-serif; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <h1>International Hospitals' Map</h1>
+    <div id="map"></div>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // Initialize the map
+        const map = L.map('map').setView([48.0, 2.0], 4); // Centered in Europe for broader view
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        // List of hospitals with verified coordinates and addresses
+        const hospitals = [
+            { name: "Kaiser-Franz-Josef-Spital", coords: [48.1749, 16.3840], address: "Kundratstraße 3, 1100 Wien, Austria" },
+            { name: "CH Mouscron", coords: [50.7425, 3.2116], address: "Av. de Fécamp 49, 7700 Mouscron, Belgium" },
+            { name: "Evangelisches Klinikum Niederrhein", coords: [51.4967, 6.7625], address: "Fahrner Str. 133, 47169 Duisburg, Germany" },
+            { name: "Klinikum Frankfurt-Höchst", coords: [50.1026, 8.5480], address: "Gotenstraße 6-8, 65929 Frankfurt am Main, Germany" },
+            { name: "Antonius Ziekenhuis", coords: [53.0570, 5.6527], address: "Bolswarderbaan 1, 8601 ZK Sneek, Netherlands" },
+            { name: "North District Hospital", coords: [22.4969, 114.1233], address: "9 Po Kin Rd, Sheung Shui, Hong Kong" },
+            { name: "Hospital de Abrantes", coords: [39.4631, -8.1976], address: "Largo Eng. Bioucas, 2200-202 Abrantes, Portugal" },
+            { name: "Hospital Pedro Hispano", coords: [41.1849, -8.6557], address: "Rua Dr. Eduardo Torres, 4464-513 Senhora da Hora, Matosinhos, Portugal" },
+            { name: "Hospital Castelo Branco", coords: [39.8197, -7.4966], address: "Av. Pedro Álvares Cabral, 6000-085 Castelo Branco, Portugal" },
+            { name: "Hospital de Aveiro", coords: [40.6269, -8.6413], address: "Av. Artur Ravara, 3810-501 Aveiro, Portugal" },
+            { name: "Hospital Santa Maria (Lisboa)", coords: [38.7498, -9.1597], address: "Av. Prof. Egas Moniz, 1649-035 Lisboa, Portugal" },
+            { name: "Ng Teng Fong General Hospital (NTFGH)", coords: [1.3349, 103.7456], address: "1 Jurong East Street 21, Singapore 609606" },
+            { name: "Changi General Hospital", coords: [1.3403, 103.9493], address: "2 Simei St 3, Singapore 529889" },
+            { name: "Hospital Universitari Son Espases", coords: [39.6104, 2.6286], address: "Carretera de Valldemossa, 79, 07120 Palma, Illes Balears, Spain" },
+            { name: "Parc Taulí Hospital Universitari", coords: [41.5558, 2.1022], address: "Parc Taulí, 1, 08208 Sabadell, Barcelona, Spain" },
+            { name: "Hospital Comarcal Sant Jaume de Calella", coords: [41.6153, 2.6535], address: "Carrer de Sant Jaume, 209, 08370 Calella, Barcelona, Spain" },
+            { name: "Länsjukhuset i Sundsvall", coords: [62.3908, 17.2824], address: "Lasarettsvägen 21, 856 43 Sundsvall, Sweden" },
+            { name: "Hôpital Universitaire Genève - Les Trois-Chênes", coords: [46.1922, 6.1977], address: "Chemin du Pont-Bochet 3, 1226 Thônex, Switzerland" },
+            { name: "Cliniques El Manar", coords: [36.8065, 10.1647], address: "1 Rue de l’Hôpital, Tunis 1006, Tunisia" }
+        ];
+
+        // Add markers for each hospital
+        hospitals.forEach(hospital => {
+            L.marker(hospital.coords).addTo(map)
+                .bindPopup(`<b>${hospital.name}</b><br>${hospital.address}<br>Lat: ${hospital.coords[0]}, Lon: ${hospital.coords[1]}`);
+        });
+
+        // Fit map to show all markers
+        if (hospitals.length > 0) {
+            const group = new L.featureGroup(hospitals.map(hospital => L.marker(hospital.coords)));
+            map.fitBounds(group.getBounds().pad(0.1)); // Add slight padding
+        }
+    </script>
+</body>
+</html>
